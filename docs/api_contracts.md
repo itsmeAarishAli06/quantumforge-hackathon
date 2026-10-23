@@ -2,14 +2,14 @@
 
 All shared models live in `common/schemas.py`; no module should define a second copy. Contracts are independent of Streamlit, Gemini, and SQLite. Extra fields are rejected to catch interface drift. Unreadable medicine fields are `None`, optionally named in `unreadable_fields`.
 
-The current `ui/demo_service.py` returns schema-valid synthetic values for interface development. It does not inspect images, call external services, query a database, or compare medicine details. Replace this adapter only when real extraction and verification modules are ready.
+`ai.medicine_extractor.extract_medicine_details(image_bytes) -> MedicineDetails` validates image bytes and returns the shared contract. With `GEMINI_API_KEY`, it uses the Google Gen AI SDK adapter in `ai/vision_provider.py`; the adapter requests schema-constrained visible text only. Without a key, it raises a configuration error. The UI's synthetic demo is an explicit separate action and never silently substitutes for failed live extraction. `ui/demo_service.py` still returns clearly labelled fixtures for UI presentation tests and does not compare details.
 
 ```python
-def extract_medicine_details(image_path: str | Path) -> MedicineDetails: ...
-def check_drap_alerts(medicine_details: MedicineDetails) -> VerificationResult: ...
+def extract_medicine_details(image_bytes: bytes) -> MedicineDetails: ...
+def check_drap_alerts(medicine_details: MedicineDetails) -> VerificationResult: ...  # planned only
 ```
 
-`MedicineDetails` carries medicine/generic name, strength, dosage form, manufacturer and address, batch, manufacturing/expiry dates, registration number, barcode, observations, unreadable fields, notes, extraction method, and manual-review flag. Every extracted field that cannot be read remains absent. The extraction method returns validated data or raises a typed extraction/input error in its future implementation; it does not make alert or safety decisions.
+`MedicineDetails` carries medicine/generic name, strength, dosage form, manufacturer and address, batch, manufacturing/expiry dates, registration number, barcode, observations, unreadable fields, notes, extraction method, and manual-review flag. Every extracted field that cannot be read remains absent. Extraction currently returns validated data or raises a typed input/provider error; it does not make alert or safety decisions.
 
 `AlertRecord` carries alert ID/type, documented product details, source title/URL, source excerpt, validation status, and review date. Optional source facts remain null. `MatchedAlert` pairs an alert record with one or more explicit match reasons. The result statuses are `ALERT_MATCH`, `VERIFICATION_REQUIRED`, `NO_MATCH_FOUND`, and `ERROR`.
 

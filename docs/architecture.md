@@ -1,6 +1,6 @@
 # Dawa-Muhafiz architecture
 
-**Phase:** Frontend demo. A Streamlit user flow and synthetic demo service are implemented; there is no real image extraction, database, or alert matcher.
+**Phase:** AI extraction and review. Streamlit supports live Gemini label extraction when configured and a separate synthetic demo path. There is no real database or alert matcher.
 
 ## Purpose and scope
 
@@ -31,13 +31,13 @@ All modules will run in one process. `common/schemas.py` owns shared Pydantic mo
 
 | Module | Responsibility | Current phase |
 |---|---|---|
-| `app.py` | Streamlit layout, upload validation/preview, session state, and demo workflow | Implemented for synthetic demo |
+| `app.py` | Streamlit layout, upload validation/preview, session state, Gemini/demo workflow | Implemented |
 | `ui/components.py` | Reusable result and safety presentation | Implemented |
 | `ui/demo_service.py` | Fixed synthetic extraction and selectable result scenarios | Implemented; no API or matching logic |
 | `common/schemas.py` | Single source for medicine, alert, evidence, and result models | Implemented and tested |
-| `ai/image_processing.py` | Validate/decode image; impose size and pixel limits; temporary preprocessing | Documented interface only |
-| `ai/vision_provider.py` | Provider-neutral extraction contract; later Gemini adapter | Protocol only; no API calls |
-| `ai/medicine_extractor.py` | Orchestrate image preparation and structured extraction | Documented interface only |
+| `ai/image_processing.py` | Validate/decode in-memory bytes; impose size and pixel limits | Implemented; JPG/PNG only |
+| `ai/vision_provider.py` | Gemini SDK adapter using structured output and bounded timeout | Implemented; requires user API key for live calls |
+| `ai/medicine_extractor.py` | Validate image bytes, call provider, parse dates, validate shared contract | Implemented; unit-tested with mocked providers |
 | `verification/data_loader.py` | Import reviewed JSON records and provenance into local index | Documented interface only |
 | `verification/database.py` | Future SQLite schema/index access | Documented interface only |
 | `verification/alert_matcher.py` | Deterministic comparison and evidence-backed result | Documented interface only |
@@ -55,7 +55,7 @@ Invalid or corrupt images stop before provider calls. Provider unavailability, m
 
 ## Privacy and security
 
-Future upload handling must constrain extensions, decoded formats, bytes, and pixel count; avoid persistent image storage by default and remove temporary files. API keys belong in ignored `.env` files, never source or logs. Treat OCR/provider strings as untrusted and escape them in the UI. Use parameterized SQL. Do not log uploaded images, personal data, or full provider responses unnecessarily. Keep local databases and runtime artifacts out of version control.
+The current upload handling constrains extension, decoded format, bytes, and pixel count; it keeps image bytes in Streamlit session memory and does not persist files. If Gemini extraction is explicitly requested, the bytes are transmitted to Google's Gemini service. API keys belong in ignored `.env` files, never source or logs. Treat OCR/provider strings as untrusted and render them as text. Future SQL must be parameterized. Do not log uploaded images, personal data, or full provider responses unnecessarily. Keep local databases and runtime artifacts out of version control.
 
 ## Future integration points
 
@@ -63,4 +63,4 @@ The agreed functions are `extract_medicine_details(image_path) -> MedicineDetail
 
 ## Included and deferred
 
-Included: Python package layout, shared Pydantic contracts, Streamlit demo UI, in-memory image validation and preview, editable fields, synthetic demo extraction/scenarios, documentation, and tests. Deferred: Gemini calls, OCR, real extraction, SQLite operations, JSON importer, matching logic, scraping, authentication, deployment, and production medical verification. No actual alert records or verification results are supplied.
+Included: shared Pydantic contracts, premium Streamlit review flow, in-memory image validation and preview, Gemini structured extraction when configured, explicit synthetic demo fallback, documentation, and mocked tests. Deferred: SQLite operations, JSON importer, matching logic, DRAP scraping, authentication, deployment, and production medical verification. No actual alert records or live alert-verification results are supplied.

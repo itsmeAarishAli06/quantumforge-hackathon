@@ -1,11 +1,11 @@
 # Planned data flow
 
-**The upload/review screens exist, but the extraction and verification steps below are simulated.** The current interface keeps images in memory and uses synthetic fixtures; it has no real extractor, database, or matcher.
+**Image validation, Gemini extraction, and review are implemented when the provider is configured.** The interface also offers an explicit synthetic extraction option. The alert lookup portion is still a future design; synthetic result panels remain test fixtures and are not a real match.
 
 ```mermaid
 sequenceDiagram
   actor Person
-  participant UI as Future Streamlit UI
+  participant UI as Streamlit UI
   participant Image as Image validation
   participant AI as Vision/OCR extraction
   participant Contract as common/schemas.py
@@ -13,8 +13,8 @@ sequenceDiagram
   participant DB as Local validated-alert index
   Person->>UI: Upload packaging image
   UI->>Image: Validate format, size, and decode
-  Image-->>UI: Safe temporary image or input error
-  UI->>AI: Request visible field extraction (future; demo currently returns fixed fixture)
+  Image-->>UI: Validated in-memory image or input error
+  UI->>AI: Request visible field extraction (Gemini, if configured)
   AI->>Contract: Validate structured MedicineDetails
   Contract-->>UI: Details with missing/uncertain fields
   UI-->>Person: Review/correct extracted fields

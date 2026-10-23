@@ -61,4 +61,4 @@ def test_empty_upload_is_rejected_without_exception():
 def test_upload_validation_rejects_unsupported_decoded_format():
     valid, message, _ = validate_image(image_bytes("GIF"))
     assert not valid
-    assert "Unsupported" in message
+    assert "JPG or PNG" in message
