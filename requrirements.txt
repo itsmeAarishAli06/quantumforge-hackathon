@@ -1,0 +1,650 @@
+# Dawa-Muhafiz — Complete Project Blueprint
+
+AI-Powered Medicine Safety, Verification & Rapid-Alert Assistant for Pakistan
+
+Dawa-Muhafiz will be a web application that helps people in Pakistan check whether their medicine's details match official safety alerts, understand potential risks, and access clear safety guidance in Urdu and Sindhi.
+
+The goal is to build a project that is useful in the real world, technically impressive for a hackathon, feasible to implement, and honest about what AI can and cannot verify.
+
+One fundamental decision will guide the entire project:
+
+We are not training a new AI model to decide whether a medicine is fake. We are building a specialized medicine-safety system using existing AI, official documents, a structured database, and a deterministic verification engine.
+
+That distinction is what makes the project more than a simple AI chatbot.
+
+## 1. Project overview
+
+Smart Medicine Scanner
+
+Users photograph a medicine carton, blister pack, bottle, or supported barcode. AI and OCR extract the available information.
+
+Official Alert Verification
+
+The system compares medicine names, batch numbers, manufacturers, and other available details against validated DRAP alerts.
+
+Evidence-Based Safety Result
+
+Users see matching alert details, the original source, the reason for the warning, and the appropriate next steps.
+
+Urdu & Sindhi Assistance
+
+The application explains technical findings in simple language and can read warnings aloud.
+
+| Project detail           | Decision                                                  |
+| ------------------------ | --------------------------------------------------------- |
+| Project name             | Dawa-Muhafiz                                              |
+| Domain                   | Healthcare technology, AI and public safety               |
+| Target country           | Pakistan, initially Sindh                                 |
+| Target users             | Citizens, pharmacists and healthcare workers              |
+| Application type         | Responsive web application / PWA-ready                    |
+| Main AI capability       | Medicine image understanding and information extraction   |
+| Main verification method | Structured database lookup and deterministic matching     |
+| Primary data source      | Official DRAP alerts and recalls                          |
+| Languages                | English, Urdu and Sindhi                                  |
+| Core objective           | Help users identify documented medicine-safety alerts     |
+| Development priority     | Reliable working prototype first; advanced features later |
+
+## 2. Complete feature list
+
+We should divide features into three levels so we can finish a working project without getting overwhelmed.
+
+### Phase 1 — Must-have features (MVP)
+
+These are the features the first working version must include.
+
+1\. Medicine image upload and scanning
+
+- Upload an image from a device.
+- Support taking a photo on a smartphone.
+- Accept cartons, blister strips, and bottles.
+- Allow a user to retake or replace a blurry image.
+
+2\. AI medicine information extraction
+
+Extract the medicine name, strength, dosage form, manufacturer, batch number, expiry date, and registration number when visible. Use an explicit "unknown" or "unreadable" state rather than inventing missing information.
+
+3\. DRAP alert database
+
+Import validated official Rapid Alerts and Recall Alerts. Store the source, publication date, product name, affected batch, alert category, and recommended action.
+
+4\. Batch-level matching engine
+
+Compare extracted information against official records. Require a reliable match before displaying a confirmed alert match, and show which fields matched.
+
+5\. Safety result screen
+
+Display one of these outcomes:
+
+- Red: matching official safety alert found.
+- Amber: possible discrepancy or insufficient information.
+- No known alert found: no matching record in the available database.
+
+The last result must never be presented as proof that the medicine is genuine.
+
+6\. Evidence and source links
+
+Display the original DRAP alert, its reference number, relevant affected-batch details, publication date, and source link. Users should be able to inspect the evidence.
+
+7\. English, Urdu and Sindhi
+
+Translate the safety explanation into the selected language. Use reviewed templates for important safety messages.
+
+### Phase 2 — High-value features
+
+Once Phase 1 works correctly, add these features.
+
+- Barcode/DataMatrix scanning: Read supported product codes and compare their information with available records.
+- Voice warnings: Read the safety result aloud in Urdu or Sindhi.
+- Manual medicine search: Search by brand name, manufacturer, batch number, or alert number.
+- Packaging discrepancy flags: Highlight inconsistent text, missing information, or potentially suspicious packaging characteristics. These are investigation clues, not proof of counterfeiting.
+- Report preparation: Generate a report with the scan details and relevant evidence that the user can review before submitting it through an official channel.
+- Recent scan history: Allow users to revisit results if they opt in.
+- Responsive PWA: Make the website easy to access from a mobile home screen.
+
+### Phase 3 — Advanced features
+
+These are future improvements, not requirements for the first hackathon version.
+
+- Authorized integration with an official pharmaceutical verification service.
+- Automated monitoring for newly published DRAP alerts.
+- A document-processing pipeline for new PDF alerts.
+- A pharmacist or administrator review dashboard.
+- Improved extraction using a labelled medicine-packaging dataset.
+- Offline access to a limited, clearly dated alert database.
+- Aggregate analytics on common alert categories without exposing personal information.
+
+Priority rule: Do not build every feature at once. A working scanner, correct alert matching, and clear evidence are more valuable than ten incomplete AI features.
+
+## 3. The exact user workflow
+
+This is the main journey the development team should implement.
+
+1\. Open Dawa-Muhafiz
+
+Choose a language and select Scan Medicine.
+
+2\. Capture or upload a photograph
+
+Validate file type, size and image quality.
+
+3\. Extract medicine details
+
+Vision model, OCR and barcode decoding where supported.
+
+4\. Confirm extracted information
+
+Let the user correct uncertain medicine names or batch numbers.
+
+5\. Search official records
+
+Compare the product and batch against validated alert data.
+
+6\. Display the result
+
+Show the finding, source evidence, limitations, and recommended next steps.
+
+### Example result
+
+A user scans a medicine whose batch number is `YT9D`.
+
+The system extracts the name and batch number, finds a corresponding entry in its validated DRAP alert database, and displays the matching official document.
+
+The result should explain that the batch matches the alert and show the relevant evidence. It should not independently diagnose the medicine or make a claim beyond what the official record supports.
+
+If the image is blurry, the system should request another photograph. If no matching alert exists, it should state that no match was found in the available database.
+
+## 4. Project pages and screens
+
+For a polished hackathon demo, I recommend these screens.
+
+[MedAware AI | Devpost](https://images.openai.com/static-rsc-4/s3nax_9sN7FLZlkbuPLlylh8sZm_MHrT_oR0N-R_Yiq1kxIrLAzznawIbh2U64ZqCV4dXpcf33pzAOQDpwYX4UJwaVCf5Ssl3Up1Q-DuhXSSSeQgc9js4Z4mQsga3LY5CltCi5mKlbYRq6agH4MohCsghfDVALDQ-4iYgZAVQv8?purpose=inline)
+
+01 — Home page
+
+Project introduction, Scan Medicine button, manual search, language selector, and safety disclaimer.
+
+[Kindredd Health](https://images.openai.com/static-rsc-4/PXsLtGYY5rweJu1cq-Vqu-uOLkUorKNU6hCyJy10EGpnhrmvIuJBwGk90lDyYHO7m58pdnrTGSRrFCn8xE2z27umFQv6oiQdO45MMb6rrYrm-ERA2fBCpppyPmYggleG3JZN6d746n3fN40MLGi9wToHav0vl5OC1oAwSOVKUS8?purpose=inline)
+
+02 — Medicine scanner
+
+Camera/upload control, photo preview, retake option, and scan instructions.
+
+03 — Extracted information
+
+Editable medicine name, manufacturer, batch number, dates, and confidence or uncertainty indicators.
+
+[Productline WEB | NMVS Connect | FMD Scan Software](https://images.openai.com/static-rsc-4/lmKDZ2o-fRWjg3fla8dR0ZVQyoP41zoDg4hXBpcA7e_nkm6ybgawamvD8gjdBoC5Ri5QdN1zRZFE-dkCdw3bJZr0qa7MCvpaqy7tDynxe7GugjJF84W25uKyt1QyPYG3gAieXH_ZHUBHobxcjXsZ_Ms6Djrsa4NVgvN_VCaeON4?purpose=inline)
+
+04 — Verification result
+
+Alert status, matched fields, relevant warning, and clear next steps.
+
+[Ascend Laboratories LLC. is voluntarily recalling Dabigatran Etcxilate Capsules due to the presence of a NDSRI, N-nitroso-dabigatran, above the established Acceptable Daily Intake (ADI) level - Nitrosamines in the News - Nitrosamines Exchange](https://images.openai.com/static-rsc-4/2OWsAY9uVEFXJulTdTvZIn_Ow8MSGcu8f9sv2veiMMVkY_1Esu3tJszT5Fl6iV4YG93a0gWxbYInaSi27K6CI99MaXrVUXDlNYEqEQ-7DL31i_n8Nikldoe7ScX0KsesTrZ1nun420S9Vhhx25oKwePUBetwq7eEBo4s-nvJEsA?purpose=inline)
+
+05 — Alert details
+
+Original alert link, official reference, date, affected product/batch, and reported findings.
+
+[MediLife | Authentic Digital](https://images.openai.com/static-rsc-4/j4ynzpssbielsqyfv2YQSUkZBTtZfQ5enOvSEeLwqWL50C2lkLsqjiy3McC_cM5sbXNEvQQXFuxM9G4Xnw0YX1ucdsyjrhhlKvmOZrmVuI_5jNeuIM0kDyNl0HroACNCwYMOT2Zx-OfbauklowhU574dcTOsrZVd37lPVLBoYa8?purpose=inline)
+
+06 — Medicine and alert search
+
+Search products or batches, filter alert types, and open the underlying official record.
+
+[PharmaCore ERP-Smart Pharmacy Management Dashboard UI/UX Design by AgamiSoft UX Studio on Dribbble](https://images.openai.com/static-rsc-4/i37pURJoZNRqPXwNGIUx_PaZJ3wNzWa1iuhz9LHYhi5xVTbHzWh_oaqDp3I1DhuxIFNw65RZDAeW3kCUokz2zUnktLpIihqmbS8VoV8_9_7PA9wswlInaSml2IIrsuVA83p__ngoA090A_u_i3H7Fm417z0sOv5RvEywoZJr6D0?purpose=inline)
+
+07 — Admin/data management (optional)
+
+Import documents, validate extracted records, correct data, and track the last update.
+
+The interface should be mobile-first, use large readable text, provide accessible contrast, and work for people with limited technical knowledge. Avoid requiring an account just to perform a basic scan unless a real need for authentication emerges.
+
+## 5. Recommended technology stack
+
+Since you want to build with coding agents and deploy a working web application, I recommend a stack that is straightforward to integrate and test.
+
+[React Logo Vector PNG | Modern JavaScript UI Library Emblem  - freepng](https://images.openai.com/static-rsc-4/v_YRxkVgaIO4SDeoNvs8wqFWCUPPpZZsL5kVx_ktDQiKtZgMAHiSkxHMJjDkyVuTICNI24RF-lwOIJxaeydWu09nWdyQFsirfUWfJani7GSpYOfLBE-LNBdDDc_8acLBouV10tSEh5cWrc3WFWUieGkP2unLzBMX37Q6Sq2WqGs?purpose=inline)
+
+Frontend — React + Vite + Tailwind CSS
+
+Builds the responsive scanner, upload interface, results page, search, and language selector.
+
+[Pengenalan Node JS Lengkap + Cara Install - Teziger Blog](https://images.openai.com/static-rsc-4/yhb6L_zHD89hq9StVnKJSbhV5YpcjpuXaUiwKe3Yd0Q3p8qLiwTo4xoM6cgkONkAC2R8lMT8_9O1FOAg1f3t88UK4wnh_g7GSnUoengav4u4Cuy4V1KWDeoEr_8EXAvRqrXtBzD4mBtIunoq3hjYaw1TePJfYx8Vj52vuhBOF50?purpose=inline)
+
+Backend — Node.js + Express
+
+Validates uploads, calls the vision API, executes verification logic, and returns results to the frontend.
+
+[Gemini – Google’s AI Assistant for Smart Conversations & Productivity – Daidu.ai](https://images.openai.com/static-rsc-4/ptJvxAnbpHSz9oKwhiZCWU9MTvmPl997rGrZd4wqTgvg18xJPt8X3ASwCANnmkTN4cvnMJqTW5csYg-Wx_SyU_pL6waVf_YLfxdwlsLklzd2H22udrktQ6oVGaeLOvjKRl8y4lJCZGtYV2I-4GwcwBjAGawfKX-wZYbv6TzRORU?purpose=inline)
+
+AI — Gemini API
+
+Extracts medicine details from photographs and can return structured JSON. The official documentation supports image understanding and structured outputs.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://ai.google.dev\&sz=32)
+
+Google AI for Developers
+
++1
+
+
+
+[Supabase Logo PNG,  Vector (AI, EPS, CDR, PDF, SVG) - iconLogoVector](https://images.openai.com/static-rsc-4/ZWNEwueIa4jX7IEKpIW_ZvVuoMv7nOsWdPj6prThJJQ0b_Hdaj2TjpLMM3E--UH3DlZFvFuaW_7en80O46eYFmbPzAHBLTg5tC347p9Jxt-PfqHdXtVqQqYVLwjnGugv7sybOkq1Oxeuve_jUb8c_HhsjDpmewZufk8XjOfQcYc?purpose=inline)
+
+Database — Supabase PostgreSQL
+
+Stores validated alerts, products, source metadata, and optional scan history. Supabase also provides authentication and storage if needed later.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://supabase.com\&sz=32)
+
+Supabase Docs
+
++1
+
+
+
+[Multi-GPU Deep Learning Workstations – ANT PC](https://images.openai.com/static-rsc-4/_c36jwWfiy1VR20SNMYUhvRjJ2XArGv2pkEk3L3oqpFDTL5KAsfOramLxs7gWbwQ5pkrphJm4k4qkTKOaXICkNu_-fraNPrJf1QZzzbxjK4ftOScw17ZaLpCAumOKLWA_W-AKAcs3W-4AdwWvlJsShU2NDtk8vFYnZocAbQxQV4?purpose=inline)
+
+Image processing — OpenCV and OCR
+
+Improve image readability and extract printed text. Add a barcode decoder when needed.
+
+[How to Use Vercel - Getting Started Guide (2026) | Delv](https://images.openai.com/static-rsc-4/II9DBEprjDf0_Y2RIUGxgZ4bjOULzr-2p-vKNBRgqy7HlRqGOMqEpPcOwUNksEJ5cF_VNDkA9VOZEQMGM7tEd68wU6Qq1Ie8oBMWk56TuhpHeXCmYhRbaAIW1gPry2H2caHr25d3R9XsGDeBbGjL3gVZdw_ZqTY_kipySshbK7A?purpose=inline)
+
+Frontend deployment — Vercel
+
+Hosts the React application.
+
+[Render: $100 Million Series C Extension At $1.5 Billion Valuation Raised For Modern Cloud Platform](https://images.openai.com/static-rsc-4/XQ8Itzkko2ukMle7Uxpew8KfTJDML0AFQIELfD8nzBWnDbB2buV_-AsF1NxFDv08z8p-iC-K-GzCon6hOvM1io703iDnnCW5d-XUwc-1wQc1rJI4dj2LRKYXQ0fbQIER6RcL5ZHsIaa7bzs3Cm8EBYEEKdiNbKqTe6vIudIBfWQ?purpose=inline)
+
+Backend deployment — Render
+
+Hosts the Express API, subject to the selected plan's limits and availability.
+
+[GitHub official Logo PNG Vector (EPS) Free Download](https://images.openai.com/static-rsc-4/j6DnFoGR1MfnOBr9lIK962EQdYyxmY8SyJ9-28a69vOkM2BzMHwDekYl2JG6WLr8JTUKKPjN98M-z-HFImt0j5nyukd1e120mDGQLqeLKnLZ8JVrrifApGVGwSFY2cM3RpPDf7Km3KmgvbycYPvr2t5PuRLGFKmpzE2a9ikOtUk?purpose=inline)
+
+Version control — Git and GitHub
+
+Keeps the code organized, supports collaboration, and tracks changes made by your team and coding agents.
+
+Useful official references:
+
+- [DRAP — Recalls and Rapid Alerts](https://www.dra.gov.pk/safety-information/product-recalls/rapid-alert-system/?utm_source=chatgpt.com)
+- [Gemini — Image understanding](https://ai.google.dev/gemini-api/docs/image-understanding?utm_source=chatgpt.com)
+- [Gemini — Structured outputs](https://ai.google.dev/gemini-api/docs/structured-output?utm_source=chatgpt.com)
+- [Supabase — Database documentation](https://supabase.com/docs/guides/database/overview?utm_source=chatgpt.com)
+
+Keep the AI API key on the backend. Never expose it in the React frontend or commit it to GitHub.
+
+## 6. Database requirements
+
+We should organize the database so that every result can be traced back to its source.
+
+The following is a proposed initial schema, not a claim about DRAP's own internal database.
+
+| Table              | Important fields                                                                                    | Purpose                                                                  |
+| ------------------ | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `alerts`           | `id`, `alert_number`, `alert_type`, `published_at`, `source_url`, `source_text`, `last_verified_at` | Stores validated official alert records.                                 |
+| `affected_batches` | `id`, `alert_id`, `product_name`, `manufacturer`, `batch_number`, `strength`, `dosage_form`         | Stores individual products and batches mentioned in alerts.              |
+| `products`         | `id`, `product_name`, `generic_name`, `manufacturer`, `registration_number`                         | Stores product reference information when available.                     |
+| `scans`            | `id`, `created_at`, `extracted_fields`, `match_status`, `alert_id`                                  | Optional scan history, only where justified and appropriately protected. |
+| `data_imports`     | `id`, `source_url`, `imported_at`, `review_status`, `error_details`                                 | Tracks document imports and data quality.                                |
+
+The `affected_batches` table should reference `alerts` so that the application can retrieve the exact official document supporting a match.
+
+Batch numbers should be stored as text, not numeric values, because they may contain letters, leading zeros, or other characters.
+
+The system should also preserve the original spelling and a normalized search value where useful. Normalization can help find candidates, but must not silently convert an uncertain match into a confirmed one.
+
+### How the database gets populated
+
+1. Download a DRAP alert or recall document.
+2. Extract its text and tables.
+3. Review the medicine names and affected batches against the source.
+4. Save the validated records.
+5. Store the original source URL and publication date.
+6. Periodically check whether the source has been updated.
+
+DRAP's public website provides a dedicated recalls and rapid-alert section, and its alerts include affected product and batch details.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.dra.gov.pk\&sz=32)
+
+Drug Regulatory Authority of Pakistan
+
++1
+
+
+
+For the prototype, use a manually reviewed set of official alerts rather than attempting to automate every document import from day one.
+
+## 7. Verification logic and result rules
+
+This is the most important technical component of Dawa-Muhafiz.
+
+We should define the rules before asking an AI agent to implement them.
+
+| Situation                                                             | System result                   | Required behavior                                                                                       |
+| --------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Product and batch reliably match an official spurious/falsified alert | Red — Official alert match      | Show the exact alert, affected batch, source and safety guidance.                                       |
+| Product and batch match an official recall                            | Red or prominent recall warning | Show the recall category and official recommended action.                                               |
+| Some details conflict with available reference records                | Amber — Verification required   | Show the discrepancy and request a clearer photo or further checking.                                   |
+| Batch number is missing or unreadable                                 | Incomplete scan                 | Ask the user to enter it or upload a clearer image.                                                     |
+| No matching alert is found                                            | No known alert found            | Explain that the available database contains no matching alert; do not certify the medicine as genuine. |
+| Multiple possible matches exist                                       | Ambiguous result                | Display possible records and request confirmation instead of guessing.                                  |
+| Database or AI service is unavailable                                 | Verification unavailable        | Explain the failure and do not return a false green result.                                             |
+
+A recall warning and a counterfeit warning should not be treated as interchangeable. The system must preserve the classification stated by the official source.
+
+### Recommended matching algorithm
+
+1. Extract candidate medicine names, batch numbers and manufacturer details.
+2. Validate that the fields have plausible formats.
+3. Find candidate records using normalized names and identifiers.
+4. Require a matching batch number and sufficient product identity for a confirmed affected-batch match.
+5. Check for ambiguity or conflicting information.
+6. Return the relevant official source and exact matching fields.
+7. If the evidence is incomplete, ask the user for more information.
+
+Do not let a generative AI model independently choose the final safety status. Use deterministic rules to make the decision and AI to assist with extraction and explanation.
+
+## 8. AI requirements and prompts
+
+We should use the AI for a narrowly defined job: reading medicine packaging.
+
+For example, the vision model should return a structured record containing:
+
+```
+
+{
+  "medicine_name": "Augmentin",
+  "strength": "625 mg",
+  "dosage_form": "tablet",
+  "manufacturer": "As printed on package",
+  "batch_number": "YT9D",
+  "expiry_date": null,
+  "registration_number": null,
+  "unreadable_fields": ["expiry_date"],
+  "requires_user_confirmation": true
+}
+
+```
+
+This is an illustrative extraction example, not a verified result for a particular physical medicine pack.
+
+The AI prompt should instruct the model to:
+
+- Extract only information visible in the image.
+- Preserve batch numbers exactly as printed.
+- Never invent missing details.
+- Return `null` for unreadable or absent fields.
+- Distinguish printed text from its own interpretation.
+- Flag ambiguity and request a clearer photograph when necessary.
+- Return data in the required JSON schema.
+
+Gemini supports image input and schema-constrained structured output, making it suitable for this extraction stage.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://ai.google.dev\&sz=32)
+
+Google AI for Developers
+
++1
+
+
+
+Do not ask the model to declare a medicine genuine or counterfeit from appearance alone. That decision must depend on the evidence available from the verification system.
+
+## 9. Data collection and documentation requirements
+
+Before development, the team needs the following project assets.
+
+### Project preparation checklist
+
+0/10
+
+Official DRAP alert collection
+
+PDFs or web records with source URLs, dates and alert numbers.
+
+Structured alert dataset
+
+Reviewed product names, batch numbers, manufacturers and alert classifications.
+
+Medicine image test set
+
+Representative packaging photos with known field values and permission to use them.
+
+OCR test cases
+
+Clear, blurry, partially visible and ambiguous packaging images.
+
+Verification test cases
+
+Known alert matches, near-matches, missing batches and products absent from the database.
+
+Translation dictionary
+
+Reviewed English, Urdu and Sindhi safety messages.
+
+UI wireframes
+
+Home, scanner, extraction confirmation, result, alert details and search.
+
+API specification
+
+Request/response formats, error handling and API key requirements.
+
+Deployment configuration
+
+Environment variables, hosting setup and database configuration.
+
+README and demo script
+
+Project purpose, setup instructions, limitations, data sources and a reproducible demonstration.
+
+The dataset must be small enough to validate manually, but varied enough to demonstrate the system's behavior in different conditions.
+
+For a hackathon, the goal is not to claim that we have collected every DRAP alert. It is to show that the application works correctly against a documented, reproducible collection of records.
+
+## 10. Security, privacy and medical safety requirements
+
+These requirements are essential because the application deals with healthcare information.
+
+- Do not store uploaded photographs longer than necessary unless the user explicitly opts in.
+- Validate file types, sizes, and image content on the backend.
+- Keep AI credentials and database secrets out of the frontend and source repository.
+- Restrict administrative access to alert imports and corrections.
+- Protect scan history using appropriate access controls.
+- Avoid collecting patients' names, prescriptions, or other personal health information unless necessary.
+- Do not provide diagnoses, recommend medicine substitutions, or advise users to change their prescribed treatment.
+- Do not call a product genuine simply because no alert matches.
+- Show source dates and disclose that the database may not include every current alert.
+- Provide appropriate guidance to contact a pharmacist or healthcare professional when uncertain.
+- Ask users to seek prompt professional advice if they have used a product identified in an official alert and are concerned about possible harm.
+
+The result screen should clearly distinguish a documented regulatory finding from a visual anomaly or an inconclusive scan.
+
+## 11. Testing and acceptance criteria
+
+A feature is not finished simply because it works once on the developer's laptop.
+
+For the first release, define testable acceptance criteria.
+
+| Area           | Acceptance criterion                                                                                |
+| -------------- | --------------------------------------------------------------------------------------------------- |
+| Upload         | Supported images upload successfully; unsupported files receive a clear error.                      |
+| Extraction     | The system returns structured fields and identifies unreadable values rather than fabricating them. |
+| Verification   | A known affected batch matches the correct alert in the test dataset.                               |
+| Batch accuracy | Similar batch numbers do not trigger an incorrect confirmed match.                                  |
+| Evidence       | Every confirmed alert match links to its supporting official source.                                |
+| Uncertainty    | Missing, conflicting, or ambiguous data produces an inconclusive result.                            |
+| Localization   | Core warnings display correctly in English, Urdu and Sindhi.                                        |
+| Security       | API keys are not exposed to the browser or committed to GitHub.                                     |
+| Reliability    | API failures and database errors produce safe error states rather than fabricated results.          |
+| Mobile         | The primary scan and results flow works on a smartphone-sized screen.                               |
+
+Track batch-number extraction accuracy, exact-match precision, false positive rate, false negative rate, and the percentage of scans where the system correctly abstains.
+
+For a safety-oriented application, avoid optimizing only for the number of scans that produce a confident result.
+
+## 12. Deployment and environment configuration
+
+The project should run locally first, then be deployed online.
+
+Suggested project structure:
+
+```
+
+dawa-muhafiz/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── i18n/
+│   └── package.json
+├── backend/
+│   ├── src/
+│   │   ├── routes/
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   │   ├── aiExtraction.js
+│   │   │   ├── alertMatching.js
+│   │   │   └── documentImport.js
+│   │   ├── validation/
+│   │   └── app.js
+│   ├── tests/
+│   └── package.json
+├── data/
+│   ├── sample-alerts.csv
+│   └── data-dictionary.md
+├── docs/
+│   ├── requirements.md
+│   ├── architecture.md
+│   └── test-plan.md
+├── .gitignore
+└── README.md
+
+```
+
+The actual alert records should be loaded into the database, not hardcoded into application logic.
+
+Configure environment variables such as:
+
+- `GEMINI_API_KEY` — vision model access.
+- `SUPABASE_URL` — database project URL.
+- `SUPABASE_SECRET_KEY` — server-only database credential, if required by the chosen access pattern.
+- `FRONTEND_URL` — deployed frontend origin for CORS configuration.
+
+Use the appropriate least-privilege database credential and keep all secrets server-side. Never put secret keys in frontend environment variables.
+
+Deploy the frontend to Vercel, the backend to Render, and use Supabase for PostgreSQL. Before the final demo, test the entire deployed workflow rather than testing only the frontend.
+
+## 13. Development roadmap for your coding agents
+
+Since you plan to use AI coding agents, give them one well-defined phase at a time.
+
+Phase 1
+
+Foundation
+
+Requirements and architecture
+
+Finalize scope, repository structure, data schema, API contracts, UI flow, and safety rules. Do not begin by generating the entire application in one step.
+
+Phase 2
+
+Frontend
+
+Build the complete interface
+
+Implement the home page, scanner, extraction confirmation, result states, alert details, responsive layout, and language selector using mock data initially.
+
+Phase 3
+
+Data
+
+Build the official alert database
+
+Collect and validate a sample of DRAP records, create database tables, import the records, and test batch matching independently of AI.
+
+Phase 4
+
+AI
+
+Integrate image extraction
+
+Connect the backend to Gemini, implement structured extraction, validate the response, and handle blurry images and missing fields.
+
+Phase 5
+
+Integration
+
+Connect the full workflow
+
+Wire the scanner to extraction, extraction to verification, and verification to the evidence-based results page.
+
+Phase 6
+
+Quality
+
+Test, secure and deploy
+
+Run positive and negative test cases, fix defects, verify secrets and permissions, deploy the application, and rehearse the demo.
+
+Use GitHub branches and small commits for each phase. Require the agent to run the relevant tests and summarize changed files, known issues, and remaining work before moving to the next phase.
+
+## 14. How to make Dawa-Muhafiz stand out in the hackathon
+
+The project should demonstrate more than an AI-generated answer.
+
+Focus your live demonstration on five things:
+
+1. A real official alert: Use a verified DRAP document as the source of truth.
+2. A medicine photo: Show the application extracting the batch number.
+3. A correct database match: Demonstrate that the batch matches the exact official record.
+4. An explainable result: Display the original source and explain the warning in Urdu or Sindhi.
+5. A safe negative case: Scan a product with no matching alert and show that the application does not claim it is genuine.
+
+That last case is particularly valuable because it demonstrates that you understand the limitations of AI in a safety-critical setting.
+
+## 15. Final project scope
+
+For the first release, I recommend committing to this exact scope:
+
+## Dawa-Muhafiz MVP
+
+The minimum complete version worth presenting.
+
+Responsive React web application
+
+Medicine photo upload and camera capture
+
+Gemini-powered medicine information extraction
+
+Validated DRAP alert and recall database
+
+Batch-level deterministic matching
+
+Red, amber and no-known-alert outcomes
+
+Original official alert links and evidence
+
+English, Urdu and Sindhi safety explanations
+
+Clear uncertainty and error handling
+
+Automated tests for matching and extraction
+
+Live deployment and a documented demo
+
+Leave automated web crawling, advanced counterfeit-image classification, user accounts, voice features, extensive analytics, and pharmaceutical authentication integrations for later unless the core product is already working.
+
+### What the team should do first
+
+Before coding, collect a small set of official DRAP alerts and build the structured database. In parallel, finalize the user interface and project architecture.
+
+Then make the database matching work independently. After that, integrate AI-based image extraction.
+
+This order is important: the database provides the evidence, AI extracts the details, and the verification engine connects the two.
+
+That is the foundation of a useful Dawa-Muhafiz project—not simply another chatbot that guesses whether a medicine is fake.
