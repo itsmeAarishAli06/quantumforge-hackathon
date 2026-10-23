@@ -33,6 +33,8 @@ from ui.components import (
 from ui.demo_service import DemoServiceError, extract_demo_details, screen_demo
 from ui.i18n import LANGUAGES, is_rtl, t
 from ui.styles import apply_styles
+from verification.alert_matcher import check_drap_alerts
+from verification.data_loader import get_dataset_metadata
 
 
 DETAIL_FIELDS = {
@@ -76,6 +78,7 @@ def _initialize_state() -> None:
         "extraction_error": None,
         "screening_result": None,
         "screened_details": None,
+        "screening_is_demo": True,
         "screening_scenario": VerificationStatus.VERIFICATION_REQUIRED.value,
         "app_language": "en",
         "active_nav": "Check Medicine",
@@ -94,6 +97,7 @@ def _clear_workflow_data() -> None:
     st.session_state["extraction_error"] = None
     st.session_state["screening_result"] = None
     st.session_state["screened_details"] = None
+    st.session_state["screening_is_demo"] = True
 
 
 def _reset() -> None:
@@ -452,8 +456,26 @@ def main() -> None:
                 st.warning("Batch or lot number is missing. Future alert screening may require manual verification.", icon="⚠️")
 
         # Step 3: Screening & Results
-        st.markdown("## 3. Alert verification is separate")
-        st.info("This phase does not search DRAP alerts or decide whether a medicine is recalled, genuine, counterfeit, or safe.", icon="ℹ️")
+        st.markdown("## 3. Official DRAP Alert Verification")
+        st.caption("Screen reviewed packaging details against official DRAP Rapid Alerts & Recalls.")
+
+        try:
+            drap_meta = get_dataset_metadata()
+            v_count = drap_meta.get("validated_count", 0)
+        except Exception:
+            v_count = 0
+
+        with st.container(border=True):
+            st.markdown("### 🛡️ Deterministic Alert Screening")
+            st.caption(f"Validated official DRAP records indexed: **{v_count}** · Source: Drug Regulatory Authority of Pakistan (dra.gov.pk)")
+            if st.button("🔍 Check Against Official DRAP Alerts", key="execute_real_verification", type="primary", disabled=current_details is None, use_container_width=True):
+                with st.spinner("Screening details against official DRAP alerts..."):
+                    real_result = check_drap_alerts(current_details)
+                st.session_state["screening_result"] = real_result.model_dump(mode="json")
+                st.session_state["screened_details"] = current_details.model_dump(mode="json")
+                st.session_state["screening_is_demo"] = False
+                st.rerun()
+
         with st.expander("Preview synthetic screening interface (development only)"):
             st.caption("This selector displays synthetic interface fixtures only. It does not run a product or batch match.")
             selected_scenario = st.selectbox(
@@ -465,6 +487,7 @@ def main() -> None:
                 result = screen_demo(current_details, selected_scenario)
                 st.session_state["screening_result"] = result.model_dump(mode="json")
                 st.session_state["screened_details"] = current_details.model_dump(mode="json")
+                st.session_state["screening_is_demo"] = True
 
         result_data = st.session_state.get("screening_result")
         if result_data:
@@ -475,10 +498,11 @@ def main() -> None:
             else:
                 try:
                     validated_result = VerificationResult.model_validate(result_data)
-                    render_result(validated_result, lang=lang)
-                    render_screening_report(current_details, validated_result, lang=lang)
+                    is_demo = st.session_state.get("screening_is_demo", False)
+                    render_result(validated_result, lang=lang, is_demo=is_demo)
+                    render_screening_report(current_details, validated_result, lang=lang, is_demo=is_demo)
                 except ValidationError:
-                    st.error("The demo result did not pass validation. Please preview it again.")
+                    st.error("The screening result did not pass validation. Please verify again.")
                     st.session_state["screening_result"] = None
                     st.session_state["screened_details"] = None
 

@@ -12,6 +12,8 @@ import streamlit as st
 
 from common.schemas import VerificationResult, VerificationStatus, MedicineDetails
 from ui.i18n import t, is_rtl
+from verification.database import fetch_validated_alerts
+from verification.data_loader import get_dataset_metadata
 
 
 def render_top_navbar(active_nav: str, lang: str = "en", gemini_ready: bool = False, model: str = "") -> None:
@@ -135,6 +137,32 @@ def render_alert_intelligence(lang: str = "en") -> None:
             unsafe_allow_html=True,
         )
 
+    try:
+        alerts = fetch_validated_alerts()
+        meta = get_dataset_metadata()
+    except Exception:
+        alerts = []
+        meta = {"validated_count": 0}
+
+    with st.container(border=True):
+        st.markdown("### 📊 Validated DRAP Alerts Registry")
+        st.caption(f"Currently indexing {meta.get('validated_count', len(alerts))} official DRAP alerts with full regulatory provenance.")
+
+        if alerts:
+            search_query = st.text_input("Filter DRAP alert registry by product or batch", placeholder="e.g., Brexin, Gabica, 4721026AA...", key="drap_registry_search").strip().casefold()
+            filtered_alerts = [
+                a for a in alerts
+                if not search_query or search_query in a.product_name.casefold() or (a.batch_number and search_query in a.batch_number.casefold())
+            ]
+            st.caption(f"Showing {len(filtered_alerts)} of {len(alerts)} official records:")
+            for a in filtered_alerts:
+                with st.expander(f"{a.product_name} · Batch: {a.batch_number or 'All Batches'} [{a.alert_type.value.replace('_', ' ').title()}]"):
+                    st.markdown(f"**Alert ID:** `{a.alert_id}`")
+                    st.markdown(f"**Publication Date:** {a.publication_date or 'Official DRAP Record'}")
+                    st.markdown(f"**Official Source:** {a.source_title}")
+                    st.markdown(f"**Regulatory Excerpt:** *\"{a.supporting_excerpt}\"*")
+                    st.markdown(f'<a href="{a.source_url}" target="_blank" rel="noopener noreferrer" style="color:#087F70; font-weight:700; text-decoration:underline;">🔗 Official DRAP Document Source &rarr;</a>', unsafe_allow_html=True)
+
 
 def render_about_page(lang: str = "en") -> None:
     """Render the About Dawa-Muhafiz project page."""
@@ -181,110 +209,218 @@ def render_photo_tips(lang: str = "en") -> None:
     )
 
 
-def render_result(result: VerificationResult, lang: str = "en") -> None:
-    """Render a validated result fixture with explicit demo boundaries and evidence inspection."""
+def render_result(result: VerificationResult, lang: str = "en", is_demo: bool = True) -> None:
+    """Render a verification result with strict medical boundaries and evidence inspection."""
     st.markdown(f"## {t('result_header', lang)}")
-    st.caption("SYNTHETIC DEMO SCENARIO | No real alert lookup was performed")
 
     rtl_class = "dm-localized-container" if is_rtl(lang) else ""
 
-    with st.container(border=True):
-        if result.status == VerificationStatus.ALERT_MATCH:
-            st.error("ALERT MATCH | Synthetic demo scenario")
-            st.markdown(
-                f"""
-                <div class="dm-result-card dm-res-match {rtl_class}">
-                  <div class="dm-res-title dm-match-title">
-                    🚨 {t('status_alert_match_title', lang)}
-                  </div>
-                  <p>{t('status_alert_match_desc', lang)}</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            st.write("A sample alert-match panel is shown to demonstrate the interface.")
+    if is_demo:
+        st.caption("SYNTHETIC DEMO SCENARIO | No real alert lookup was performed")
+        with st.container(border=True):
+            if result.status == VerificationStatus.ALERT_MATCH:
+                st.error("ALERT MATCH | Synthetic demo scenario")
+                st.markdown(
+                    f"""
+                    <div class="dm-result-card dm-res-match {rtl_class}">
+                      <div class="dm-res-title dm-match-title">
+                        🚨 {t('status_alert_match_title', lang)}
+                      </div>
+                      <p>{t('status_alert_match_desc', lang)}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.write("A sample alert-match panel is shown to demonstrate the interface.")
 
-            for index, item in enumerate(result.matching_alerts, start=1):
-                with st.container(border=True):
-                    st.markdown(
-                        f"""
-                        <div class="dm-evidence-badge">OFFICIAL DRAP EVIDENCE #{index}</div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
-                    st.markdown(f"**Demo classification:** {item.alert.alert_type.value.replace('_', ' ').title()}")
-                    st.markdown(f"**Synthetic product:** {item.alert.product_name}")
-                    st.markdown(f"**Synthetic evidence:** {item.alert.supporting_excerpt}")
-                    st.markdown(f"**Fixture label:** {item.alert.source_title}")
-                    st.markdown(f"**Fixture address:** `{item.alert.source_url}`")
-                    st.markdown("**Scenario explanation:** " + "; ".join(item.match_reasons))
+                for index, item in enumerate(result.matching_alerts, start=1):
+                    with st.container(border=True):
+                        st.markdown(
+                            f"""
+                            <div class="dm-evidence-badge">OFFICIAL DRAP EVIDENCE #{index}</div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown(f"**Demo classification:** {item.alert.alert_type.value.replace('_', ' ').title()}")
+                        st.markdown(f"**Synthetic product:** {item.alert.product_name}")
+                        st.markdown(f"**Synthetic evidence:** {item.alert.supporting_excerpt}")
+                        st.markdown(f"**Fixture label:** {item.alert.source_title}")
+                        st.markdown(f"**Fixture address:** `{item.alert.source_url}`")
+                        st.markdown("**Scenario explanation:** " + "; ".join(item.match_reasons))
 
-                    # Working link to source
-                    st.markdown(
-                        f'<a href="{item.alert.source_url}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:0.4rem; color:#087F70; font-weight:700; text-decoration:underline;">🔗 {t("evidence_link", lang)} &rarr;</a>',
-                        unsafe_allow_html=True,
-                    )
+                        # Working link to source
+                        st.markdown(
+                            f'<a href="{item.alert.source_url}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:0.4rem; color:#087F70; font-weight:700; text-decoration:underline;">🔗 {t("evidence_link", lang)} &rarr;</a>',
+                            unsafe_allow_html=True,
+                        )
 
-            st.warning("This sample is not a DRAP alert, source, or finding. Do not use it to make a medicine decision.")
-            st.error(f"⚠️ {t('status_alert_match_warning', lang)}")
+                st.warning("This sample is not a DRAP alert, source, or finding. Do not use it to make a medicine decision.")
+                st.error(f"⚠️ {t('status_alert_match_warning', lang)}")
 
-        elif result.status == VerificationStatus.VERIFICATION_REQUIRED:
-            st.warning("VERIFICATION REQUIRED")
-            st.markdown(
-                f"""
-                <div class="dm-result-card dm-res-req {rtl_class}">
-                  <div class="dm-res-title dm-req-title">
-                    ⚠️ {t('status_verification_req_title', lang)}
-                  </div>
-                  <p>{t('status_verification_req_desc', lang)}</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            st.write("The available details are insufficient or ambiguous for this demo scenario.")
-            if result.missing_or_uncertain_information:
-                st.markdown("**Review these details:** " + ", ".join(result.missing_or_uncertain_information))
-            st.write("Check the physical package or consult a qualified pharmacist.")
-            st.info(f"🔎 {t('status_verification_req_action', lang)}")
+            elif result.status == VerificationStatus.VERIFICATION_REQUIRED:
+                st.warning("VERIFICATION REQUIRED")
+                st.markdown(
+                    f"""
+                    <div class="dm-result-card dm-res-req {rtl_class}">
+                      <div class="dm-res-title dm-req-title">
+                        ⚠️ {t('status_verification_req_title', lang)}
+                      </div>
+                      <p>{t('status_verification_req_desc', lang)}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.write("The available details are insufficient or ambiguous for this demo scenario.")
+                if result.missing_or_uncertain_information:
+                    st.markdown("**Review these details:** " + ", ".join(result.missing_or_uncertain_information))
+                st.write("Check the physical package or consult a qualified pharmacist.")
+                st.info(f"🔎 {t('status_verification_req_action', lang)}")
 
-        elif result.status == VerificationStatus.NO_MATCH_FOUND:
-            st.info("NO MATCH FOUND in the synthetic demo dataset.")
-            st.markdown(
-                f"""
-                <div class="dm-result-card dm-res-nomatch {rtl_class}">
-                  <div class="dm-res-title dm-nomatch-title">
-                    ℹ️ {t('status_no_match_title', lang)}
-                  </div>
-                  <p>{t('status_no_match_desc', lang)}</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            st.markdown("**This does not establish that a medicine is genuine, approved, or safe.**")
-            st.write("The current demo contains no real DRAP alert records.")
-            st.warning(f"🛡️ {t('status_no_match_caveat', lang)}")
+            elif result.status == VerificationStatus.NO_MATCH_FOUND:
+                st.info("NO MATCH FOUND in the synthetic demo dataset.")
+                st.markdown(
+                    f"""
+                    <div class="dm-result-card dm-res-nomatch {rtl_class}">
+                      <div class="dm-res-title dm-nomatch-title">
+                        ℹ️ {t('status_no_match_title', lang)}
+                      </div>
+                      <p>{t('status_no_match_desc', lang)}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.markdown("**This does not establish that a medicine is genuine, approved, or safe.**")
+                st.write("The current demo contains no real DRAP alert records.")
+                st.warning(f"🛡️ {t('status_no_match_caveat', lang)}")
 
-        elif result.status == VerificationStatus.ERROR:
-            st.error("ERROR | The demo screening could not be completed. Please retry.")
-            st.markdown(
-                f"""
-                <div class="dm-result-card dm-res-error {rtl_class}">
-                  <div class="dm-res-title dm-error-title">
-                    ⛔ {t('status_error_title', lang)}
-                  </div>
-                  <p>{t('status_error_desc', lang)}</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            if result.error_code:
-                st.caption(f"Demo error code: {result.error_code}")
+            elif result.status == VerificationStatus.ERROR:
+                st.error("ERROR | The demo screening could not be completed. Please retry.")
+                st.markdown(
+                    f"""
+                    <div class="dm-result-card dm-res-error {rtl_class}">
+                      <div class="dm-res-title dm-error-title">
+                        ⛔ {t('status_error_title', lang)}
+                      </div>
+                      <p>{t('status_error_desc', lang)}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if result.error_code:
+                    st.caption(f"Demo error code: {result.error_code}")
 
-        st.markdown(f"**Suggested next step:** {result.recommended_next_step}")
-        st.caption(f"Demo-only record count: {result.dataset_record_count}")
+            st.markdown(f"**Suggested next step:** {result.recommended_next_step}")
+            st.caption(f"Demo-only record count: {result.dataset_record_count}")
+
+    else:
+        st.caption(f"OFFICIAL DRAP VERIFICATION ENGINE | Screened against {result.dataset_record_count} validated DRAP alert records")
+        with st.container(border=True):
+            if result.status == VerificationStatus.ALERT_MATCH:
+                st.error(f"🚨 ALERT MATCH | Official DRAP Alert Record Detected ({len(result.matching_alerts)} match)")
+                st.markdown(
+                    f"""
+                    <div class="dm-result-card dm-res-match {rtl_class}">
+                      <div class="dm-res-title dm-match-title">
+                        🚨 {t('status_alert_match_title', lang)}
+                      </div>
+                      <p><strong>A matching entry was found in the validated official DRAP alert database.</strong> Review the official regulatory findings below immediately.</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                for index, item in enumerate(result.matching_alerts, start=1):
+                    with st.container(border=True):
+                        st.markdown(
+                            f"""
+                            <div class="dm-evidence-badge">OFFICIAL DRAP EVIDENCE #{index} · {item.alert.alert_id}</div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown(f"**Regulatory Alert Type:** {item.alert.alert_type.value.replace('_', ' ').title()}")
+                        st.markdown(f"**Affected Product Name:** {item.alert.product_name}")
+                        st.markdown(f"**Affected Batch Number:** `{item.alert.batch_number or 'All Batches / Product-Wide'}`")
+                        if item.alert.manufacturer_name:
+                            st.markdown(f"**Labelled Manufacturer:** {item.alert.manufacturer_name}")
+                        if item.alert.publication_date:
+                            st.markdown(f"**Publication Date:** {item.alert.publication_date}")
+                        st.markdown(f"**Official Source Title:** {item.alert.source_title}")
+                        st.markdown(f"**Regulatory Finding Excerpt:** *\"{item.alert.supporting_excerpt}\"*")
+                        st.markdown("**Deterministic Match Reasons:** " + "; ".join(item.match_reasons))
+
+                        # Direct link to official DRAP portal
+                        st.markdown(
+                            f'<a href="{item.alert.source_url}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:0.4rem; color:#087F70; font-weight:700; text-decoration:underline;">🔗 Open Official DRAP Regulatory Notice ({item.alert.alert_id}) &rarr;</a>',
+                            unsafe_allow_html=True,
+                        )
+
+                st.error(
+                    "⚠️ **CRITICAL PRECAUTION:** Do not consume, sell, or dispense this medicine batch. "
+                    "Quarantine the product and report this batch to the Drug Regulatory Authority of Pakistan (DRAP) or your provincial drug inspector."
+                )
+
+            elif result.status == VerificationStatus.VERIFICATION_REQUIRED:
+                st.warning("⚠️ VERIFICATION REQUIRED | Inconclusive Match")
+                st.markdown(
+                    f"""
+                    <div class="dm-result-card dm-res-req {rtl_class}">
+                      <div class="dm-res-title dm-req-title">
+                        ⚠️ {t('status_verification_req_title', lang)}
+                      </div>
+                      <p>The submitted medicine details partially match an official DRAP alert, but critical information (such as batch number or formulation) is missing or conflicts.</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if result.missing_or_uncertain_information:
+                    st.markdown("**Notes for manual review:**")
+                    for info in result.missing_or_uncertain_information:
+                        st.markdown(f"- {info}")
+                st.info("🔎 **Action:** Check physical packaging for the batch or lot number. If uncertain, consult a licensed pharmacist before consuming.")
+
+            elif result.status == VerificationStatus.NO_MATCH_FOUND:
+                st.info("ℹ️ NO MATCH FOUND in the validated DRAP alert database.")
+                st.markdown(
+                    f"""
+                    <div class="dm-result-card dm-res-nomatch {rtl_class}">
+                      <div class="dm-res-title dm-nomatch-title">
+                        ℹ️ {t('status_no_match_title', lang)}
+                      </div>
+                      <p>{t('status_no_match_desc', lang)}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.markdown(
+                    f"**No matching alert or recall record was identified** for this product/batch among the {result.dataset_record_count} validated official DRAP alerts currently indexed."
+                )
+                st.warning(
+                    "🛡️ **NON-AUTHENTICITY DISCLAIMER:** Dawa-Muhafiz checks only for records in its curated DRAP alert database. "
+                    "An absence of an alert match DOES NOT confirm that the medicine is genuine, authentic, registered, or safe. "
+                    "Always purchase medicines from licensed pharmacies and consult a healthcare professional if you suspect quality defects."
+                )
+
+            elif result.status == VerificationStatus.ERROR:
+                st.error("⛔ ERROR | Alert verification could not be completed.")
+                st.markdown(
+                    f"""
+                    <div class="dm-result-card dm-res-error {rtl_class}">
+                      <div class="dm-res-title dm-error-title">
+                        ⛔ {t('status_error_title', lang)}
+                      </div>
+                      <p>{t('status_error_desc', lang)}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if result.error_code:
+                    st.caption(f"Error reference code: `{result.error_code}`")
+
+            st.markdown(f"**Recommended next step:** {result.recommended_next_step}")
+            st.caption(f"Database records verified: {result.dataset_record_count} official DRAP alerts")
 
 
-def render_screening_report(details: MedicineDetails | None, result: VerificationResult, lang: str = "en") -> None:
+def render_screening_report(details: MedicineDetails | None, result: VerificationResult, lang: str = "en", is_demo: bool = True) -> None:
     """Provide an inspectable, downloadable clinical screening summary."""
     with st.expander(f"📄 {t('report_title', lang)} (Print / Export)", expanded=False):
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -292,6 +428,7 @@ def render_screening_report(details: MedicineDetails | None, result: Verificatio
         batch_no = details.batch_number if details and details.batch_number else "Not provided"
         mfr_name = details.manufacturer_name if details and details.manufacturer_name else "Not provided"
         exp_date = str(details.expiry_date) if details and details.expiry_date else "Not provided"
+        dataset_label = "(Demo dataset)" if is_demo else "(Official DRAP Validated Index)"
         
         report_text = f"""================================================================================
 DAWA-MUHAFIZ — MEDICINE SCREENING SUMMARY REPORT
@@ -313,7 +450,7 @@ Status: {result.status.value}
 2. SCREENING OUTCOME:
    - Verification Status: {result.status.value}
    - Recommended Action:  {result.recommended_next_step}
-   - Checked Records:     {result.dataset_record_count} (Demo dataset)
+   - Checked Records:     {result.dataset_record_count} {dataset_label}
 
 3. OFFICIAL EVIDENCE CITATION:
 """
@@ -321,6 +458,7 @@ Status: {result.status.value}
             for idx, m in enumerate(result.matching_alerts, start=1):
                 report_text += f"""
    Match #{idx}:
+   - Alert ID:          {m.alert.alert_id}
    - Document Title:    {m.alert.source_title}
    - Document URL:      {m.alert.source_url}
    - Official Excerpt:  {m.alert.supporting_excerpt}
@@ -346,6 +484,7 @@ pharmacist or physician immediately.
             file_name=f"dawa_muhafiz_screening_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
             mime="text/plain",
             use_container_width=True,
+            key="download_screening_report_btn",
         )
 
 
