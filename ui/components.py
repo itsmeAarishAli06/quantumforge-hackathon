@@ -1,58 +1,369 @@
-"""Reusable result and safety presentation components."""
+"""Reusable presentation components for safety alerts, evidence, guidance, reports, and views.
 
+Maintains strict medical boundaries:
+- ALERT_MATCH: Deep red warning with official DRAP citation, excerpt, and non-consumption warning.
+- VERIFICATION_REQUIRED: Calm amber alert identifying exact missing/unreadable fields.
+- NO_MATCH_FOUND: Neutral slate notice explicitly stating no match found, with prominent non-authenticity disclaimer.
+- ERROR: Distinct failure state, never converted to no-match.
+"""
+
+from datetime import datetime
 import streamlit as st
 
-from common.schemas import VerificationResult, VerificationStatus
+from common.schemas import VerificationResult, VerificationStatus, MedicineDetails
+from ui.i18n import t, is_rtl
 
 
-def render_result(result: VerificationResult) -> None:
-    """Render a validated result fixture with explicit demo boundaries."""
-    st.markdown("## Screening result")
+def render_top_navbar(active_nav: str, lang: str = "en", gemini_ready: bool = False, model: str = "") -> None:
+    """Render the desktop/mobile top navigation bar."""
+    rtl_class = "dm-localized-container" if is_rtl(lang) else ""
+    status_pill = (
+        f'<span class="dm-demo-pill dm-pill-configured">● AI Active ({model})</span>'
+        if gemini_ready
+        else '<span class="dm-demo-pill dm-pill-demo">● Demo Mode</span>'
+    )
+    st.markdown(
+        f"""
+        <div class="dm-topbar {rtl_class}">
+          <div class="dm-brand-left">
+            <div class="dm-brand-mark" aria-hidden="true">DM</div>
+            <div>
+              <p class="dm-brand-title">Dawa-Muhafiz <span style="font-weight:400; color:var(--dm-emerald);">| دوا محافظ</span></p>
+              <p class="dm-brand-subtitle">{t('app_descriptor', lang)} · {t('badge_prototype', lang)}</p>
+            </div>
+          </div>
+          <div>
+            {status_pill}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_overview_dashboard(lang: str = "en") -> None:
+    """Render the premium Home / Overview dashboard."""
+    rtl_class = "dm-localized-container" if is_rtl(lang) else ""
+    st.markdown(
+        f"""
+        <div class="dm-hero {rtl_class}">
+          <h1 class="dm-hero-title">{t('hero_headline', lang)}</h1>
+          <p class="dm-hero-copy">{t('hero_sub', lang)}</p>
+          <span class="dm-demo-pill dm-pill-demo">{t('badge_prototype', lang)}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(f"### {t('hero_cta_how', lang)}")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown(
+            f"""
+            <div class="dm-wf-card {rtl_class}">
+              <div class="dm-wf-num">01</div>
+              <h4 class="dm-wf-title">{t('wf_card1_title', lang)}</h4>
+              <p class="dm-wf-desc">{t('wf_card1_desc', lang)}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with col2:
+        st.markdown(
+            f"""
+            <div class="dm-wf-card {rtl_class}">
+              <div class="dm-wf-num">02</div>
+              <h4 class="dm-wf-title">{t('wf_card2_title', lang)}</h4>
+              <p class="dm-wf-desc">{t('wf_card2_desc', lang)}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with col3:
+        st.markdown(
+            f"""
+            <div class="dm-wf-card {rtl_class}">
+              <div class="dm-wf-num">03</div>
+              <h4 class="dm-wf-title">{t('wf_card3_title', lang)}</h4>
+              <p class="dm-wf-desc">{t('wf_card3_desc', lang)}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+    st.markdown(f"### 🛡️ {t('trust_heading', lang)}")
+    st.write(t("trust_desc", lang))
+
+    with st.container(border=True):
+        st.markdown(f"- **{t('trust_point1', lang)}**")
+        st.markdown(f"- **{t('trust_point2', lang)}**")
+        st.markdown(f"- **{t('trust_point3', lang)}**")
+
+    with st.container(border=True):
+        st.markdown(f"#### 📊 {t('coverage_title', lang)}")
+        st.caption(t("coverage_desc", lang))
+
+
+def render_alert_intelligence(lang: str = "en") -> None:
+    """Render the Alert Intelligence and regulatory guidance page."""
+    rtl_class = "dm-localized-container" if is_rtl(lang) else ""
+    st.markdown(
+        f"""
+        <div class="dm-card {rtl_class}">
+          <h2>📋 {t('alert_intel_title', lang)}</h2>
+          <p class="dm-muted">{t('alert_intel_sub', lang)}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.container(border=True):
+        st.markdown(f"### 🔍 {t('alert_intel_what_is', lang)}")
+        st.write(t("alert_intel_what_is_desc", lang))
+
+    with st.container(border=True):
+        st.markdown(f"### 🏷️ {t('alert_intel_batch_guide', lang)}")
+        st.write(t("alert_intel_batch_desc", lang))
+        st.info("💡 Tip: Batch numbers often start with 'B-', 'Lot', 'B.No', or alphanumeric codes stamped on the box flap.")
+
+    with st.container(border=True):
+        st.markdown("### 🌐 Official Regulatory Authority")
+        st.write("Drug Regulatory Authority of Pakistan (DRAP), Ministry of National Health Services Regulations and Coordination.")
+        st.markdown(
+            '<a href="https://www.dra.gov.pk/safety-information/product-recalls/rapid-alert-system/" target="_blank" rel="noopener noreferrer" style="color:#087F70; font-weight:700; text-decoration:underline;">🔗 Open Official DRAP Recall & Rapid Alert Portal &rarr;</a>',
+            unsafe_allow_html=True,
+        )
+
+
+def render_about_page(lang: str = "en") -> None:
+    """Render the About Dawa-Muhafiz project page."""
+    rtl_class = "dm-localized-container" if is_rtl(lang) else ""
+    st.markdown(
+        f"""
+        <div class="dm-card {rtl_class}">
+          <h2>ℹ️ {t('about_proj_title', lang)}</h2>
+          <p class="dm-muted">{t('about_proj_sub', lang)}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.container(border=True):
+        st.markdown(f"### 🎯 {t('about_proj_mission', lang)}")
+        st.write(t("about_proj_mission_desc", lang))
+
+    with st.container(border=True):
+        st.markdown(f"### ⚖️ {t('about_proj_ethics', lang)}")
+        st.markdown(t("about_proj_ethics_desc", lang))
+
+    with st.container(border=True):
+        st.markdown("### 🏗️ Technical Architecture")
+        st.write("Built as a Python 3.11+ Modular Monolith adhering to Pydantic v2 domain schemas, deterministic SQLite indexing, in-memory image validation, and Google Gemini Vision extraction.")
+        st.caption("QuantumForge Hackathon · Sindh Healthcare Initiative")
+
+
+def render_photo_tips(lang: str = "en") -> None:
+    """Render practical photography guidelines for package capture."""
+    rtl_class = "dm-localized-container" if is_rtl(lang) else ""
+    st.markdown(
+        f"""
+        <div class="dm-tips-box {rtl_class}">
+          <strong>💡 {t('upload_tips_title', lang)}:</strong>
+          <ul style="margin: 0.35rem 0 0.15rem; padding-left: 1.25rem;">
+            <li>{t('upload_tip_light', lang)}</li>
+            <li>{t('upload_tip_batch', lang)}</li>
+            <li>{t('upload_tip_angle', lang)}</li>
+          </ul>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_result(result: VerificationResult, lang: str = "en") -> None:
+    """Render a validated result fixture with explicit demo boundaries and evidence inspection."""
+    st.markdown(f"## {t('result_header', lang)}")
     st.caption("SYNTHETIC DEMO SCENARIO | No real alert lookup was performed")
+
+    rtl_class = "dm-localized-container" if is_rtl(lang) else ""
+
     with st.container(border=True):
         if result.status == VerificationStatus.ALERT_MATCH:
             st.error("ALERT MATCH | Synthetic demo scenario")
+            st.markdown(
+                f"""
+                <div class="dm-result-card dm-res-match {rtl_class}">
+                  <div class="dm-res-title dm-match-title">
+                    🚨 {t('status_alert_match_title', lang)}
+                  </div>
+                  <p>{t('status_alert_match_desc', lang)}</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
             st.write("A sample alert-match panel is shown to demonstrate the interface.")
-            for item in result.matching_alerts:
+
+            for index, item in enumerate(result.matching_alerts, start=1):
                 with st.container(border=True):
+                    st.markdown(
+                        f"""
+                        <div class="dm-evidence-badge">OFFICIAL DRAP EVIDENCE #{index}</div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
                     st.markdown(f"**Demo classification:** {item.alert.alert_type.value.replace('_', ' ').title()}")
                     st.markdown(f"**Synthetic product:** {item.alert.product_name}")
                     st.markdown(f"**Synthetic evidence:** {item.alert.supporting_excerpt}")
                     st.markdown(f"**Fixture label:** {item.alert.source_title}")
                     st.markdown(f"**Fixture address:** `{item.alert.source_url}`")
                     st.markdown("**Scenario explanation:** " + "; ".join(item.match_reasons))
+
+                    # Working link to source
+                    st.markdown(
+                        f'<a href="{item.alert.source_url}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:0.4rem; color:#087F70; font-weight:700; text-decoration:underline;">🔗 {t("evidence_link", lang)} &rarr;</a>',
+                        unsafe_allow_html=True,
+                    )
+
             st.warning("This sample is not a DRAP alert, source, or finding. Do not use it to make a medicine decision.")
+            st.error(f"⚠️ {t('status_alert_match_warning', lang)}")
+
         elif result.status == VerificationStatus.VERIFICATION_REQUIRED:
             st.warning("VERIFICATION REQUIRED")
+            st.markdown(
+                f"""
+                <div class="dm-result-card dm-res-req {rtl_class}">
+                  <div class="dm-res-title dm-req-title">
+                    ⚠️ {t('status_verification_req_title', lang)}
+                  </div>
+                  <p>{t('status_verification_req_desc', lang)}</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
             st.write("The available details are insufficient or ambiguous for this demo scenario.")
             if result.missing_or_uncertain_information:
                 st.markdown("**Review these details:** " + ", ".join(result.missing_or_uncertain_information))
             st.write("Check the physical package or consult a qualified pharmacist.")
+            st.info(f"🔎 {t('status_verification_req_action', lang)}")
+
         elif result.status == VerificationStatus.NO_MATCH_FOUND:
             st.info("NO MATCH FOUND in the synthetic demo dataset.")
+            st.markdown(
+                f"""
+                <div class="dm-result-card dm-res-nomatch {rtl_class}">
+                  <div class="dm-res-title dm-nomatch-title">
+                    ℹ️ {t('status_no_match_title', lang)}
+                  </div>
+                  <p>{t('status_no_match_desc', lang)}</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
             st.markdown("**This does not establish that a medicine is genuine, approved, or safe.**")
             st.write("The current demo contains no real DRAP alert records.")
+            st.warning(f"🛡️ {t('status_no_match_caveat', lang)}")
+
         elif result.status == VerificationStatus.ERROR:
             st.error("ERROR | The demo screening could not be completed. Please retry.")
+            st.markdown(
+                f"""
+                <div class="dm-result-card dm-res-error {rtl_class}">
+                  <div class="dm-res-title dm-error-title">
+                    ⛔ {t('status_error_title', lang)}
+                  </div>
+                  <p>{t('status_error_desc', lang)}</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
             if result.error_code:
                 st.caption(f"Demo error code: {result.error_code}")
+
         st.markdown(f"**Suggested next step:** {result.recommended_next_step}")
         st.caption(f"Demo-only record count: {result.dataset_record_count}")
 
 
-def render_safety_guidance() -> None:
+def render_screening_report(details: MedicineDetails | None, result: VerificationResult, lang: str = "en") -> None:
+    """Provide an inspectable, downloadable clinical screening summary."""
+    with st.expander(f"📄 {t('report_title', lang)} (Print / Export)", expanded=False):
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
+        med_name = details.medicine_name if details and details.medicine_name else "Unknown / Not provided"
+        batch_no = details.batch_number if details and details.batch_number else "Not provided"
+        mfr_name = details.manufacturer_name if details and details.manufacturer_name else "Not provided"
+        exp_date = str(details.expiry_date) if details and details.expiry_date else "Not provided"
+        
+        report_text = f"""================================================================================
+DAWA-MUHAFIZ — MEDICINE SCREENING SUMMARY REPORT
+Generated at: {now_str}
+Language: {lang.upper()}
+Status: {result.status.value}
+================================================================================
+
+1. SUBMITTED MEDICINE PACKAGING DETAILS:
+   - Product Name:        {med_name}
+   - Generic Ingredient:  {(details.generic_name if details else None) or 'N/A'}
+   - Strength / Form:     {(details.strength if details else None) or 'N/A'} / {(details.dosage_form if details else None) or 'N/A'}
+   - Batch / Lot Number:  {batch_no}
+   - Expiry Date:         {exp_date}
+   - Manufacturer:        {mfr_name}
+   - Registration Number: {(details.registration_number if details else None) or 'N/A'}
+   - Extraction Method:   {(details.extraction_method if details else None) or 'manual'}
+
+2. SCREENING OUTCOME:
+   - Verification Status: {result.status.value}
+   - Recommended Action:  {result.recommended_next_step}
+   - Checked Records:     {result.dataset_record_count} (Demo dataset)
+
+3. OFFICIAL EVIDENCE CITATION:
+"""
+        if result.matching_alerts:
+            for idx, m in enumerate(result.matching_alerts, start=1):
+                report_text += f"""
+   Match #{idx}:
+   - Document Title:    {m.alert.source_title}
+   - Document URL:      {m.alert.source_url}
+   - Official Excerpt:  {m.alert.supporting_excerpt}
+   - Match Criteria:    {'; '.join(m.match_reasons)}
+"""
+        else:
+            report_text += "   No matching official DRAP alert was found in the checked dataset.\n"
+
+        report_text += f"""
+================================================================================
+CRITICAL MEDICAL SAFETY NOTICE:
+Dawa-Muhafiz checks packaging details against available official alerts.
+A status of NO_MATCH_FOUND does NOT certify that a medicine is genuine,
+authentic, or safe. If you have medical concerns, contact a licensed
+pharmacist or physician immediately.
+================================================================================
+"""
+
+        st.code(report_text, language="text")
+        st.download_button(
+            label=f"⬇️ {t('report_btn', lang)}",
+            data=report_text,
+            file_name=f"dawa_muhafiz_screening_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+            mime="text/plain",
+            use_container_width=True,
+        )
+
+
+def render_safety_guidance(lang: str = "en") -> None:
     """Place core medical-safety limitations in a prominent, readable notice."""
-    st.markdown("## Safety notice")
+    st.markdown(f"## {t('safety_disclaimer_title', lang)}")
     st.warning(
         "This prototype does not authenticate medicines or certify that a product is genuine or safe. "
         "No alert match does not prove safety. Confirm details against the package and consult a qualified "
         "pharmacist or official DRAP information when in doubt."
     )
+    if lang != "en":
+        st.info(f"🛡️ {t('safety_disclaimer_text', lang)}")
 
 
-def render_help() -> None:
+def render_help(lang: str = "en") -> None:
     """Offer concise photo and status guidance without cluttering the main flow."""
-    with st.expander("Help and limitations"):
+    with st.expander(f"ℹ️ {t('upload_tips_title', lang)} & Limitations"):
         st.markdown("### Taking a useful photo")
         st.write("Use a clear, well-lit photo. Include product name and manufacturer, and batch and expiry details where present. Avoid glare and blur.")
         st.write("Batch and expiry details can help identify package information relevant to future alert checks. Confirm all displayed values on the physical package.")
