@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Dawa-Muhafiz
 
 Dawa-Muhafiz is a planned medicine safety screening prototype for Pakistan. Its intended purpose is to extract visible packaging details and compare them with a locally maintained, reviewed dataset of official DRAP alerts.
@@ -31,3 +32,7 @@ The test suite currently checks shared contracts and package imports. There is n
 - `docs/`: architecture, data flow, database, contracts, collaboration workflow, and roadmap.
 
 See [docs/architecture.md](docs/architecture.md) and [CONTRIBUTING.md](CONTRIBUTING.md) before starting module work. Never commit API keys, uploaded images, local databases, or private user data. A real alert must be checked against an official source and include traceable evidence.
+=======
+# quantumforge-hackathon
+Building innovative AI-powered solutions to solve real-world problems through intelligent technology. 
+>>>>>>> 5700318f26c4e097b7c2fcbca722a8aa536f9d10
