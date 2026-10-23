@@ -1,6 +1,6 @@
 # Planned data flow
 
-**This is a future design, not a completed workflow.** The current foundation has no upload UI, extractor, database, or matcher.
+**The upload/review screens exist, but the extraction and verification steps below are simulated.** The current interface keeps images in memory and uses synthetic fixtures; it has no real extractor, database, or matcher.
 
 ```mermaid
 sequenceDiagram
@@ -14,7 +14,7 @@ sequenceDiagram
   Person->>UI: Upload packaging image
   UI->>Image: Validate format, size, and decode
   Image-->>UI: Safe temporary image or input error
-  UI->>AI: Request visible field extraction
+  UI->>AI: Request visible field extraction (future; demo currently returns fixed fixture)
   AI->>Contract: Validate structured MedicineDetails
   Contract-->>UI: Details with missing/uncertain fields
   UI-->>Person: Review/correct extracted fields

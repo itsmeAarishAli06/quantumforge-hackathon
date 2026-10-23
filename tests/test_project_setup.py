@@ -8,6 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_expected_foundation_files_exist():
     expected = [
         "app.py",
+        "ui/components.py",
+        "ui/demo_service.py",
         "common/schemas.py",
         "ai/image_processing.py",
         "ai/vision_provider.py",

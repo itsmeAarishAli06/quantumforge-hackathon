@@ -1,15 +1,12 @@
-<<<<<<< HEAD
 # Dawa-Muhafiz
 
-Dawa-Muhafiz is a planned medicine safety screening prototype for Pakistan. Its intended purpose is to extract visible packaging details and compare them with a locally maintained, reviewed dataset of official DRAP alerts.
+Dawa-Muhafiz is an academic medicine alert screening prototype for Pakistan. It is intended to help review visible packaging details against an available set of official DRAP alerts. It does not authenticate medicines or certify safety.
 
-## Current state
+## Current phase
 
-This repository is at the **foundation stage**. Shared Pydantic v2 contracts and future module boundaries are present. The Streamlit UI, image extraction, SQLite operations, and alert matching are not implemented. No real alert records or verification results are included.
+Phase 2 provides a Streamlit frontend with in-memory image preview, editable medicine fields, synthetic demo extraction, and selectable synthetic screening states. **It does not analyze the uploaded image, call Gemini/OCR, contact DRAP, access a database, or perform real alert matching.** Every demo value and result is marked synthetic.
 
-The system must never say that a medicine is genuine, authentic, safe, or counterfeit based on a photo or on the absence of a match. `NO_MATCH_FOUND` means only that no match was found in the available validated dataset. A technical failure is an error, not a no-match.
-
-## Setup
+## Setup and run (PowerShell)
 
 Requires Python 3.11 or newer.
 
@@ -18,21 +15,24 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 Copy-Item .env.example .env
-python -m pytest
+streamlit run app.py
 ```
 
-The test suite currently checks shared contracts and package imports. There is no runnable application yet; `app.py` intentionally reports that the UI is deferred.
+Run tests in another terminal with the environment activated:
+
+```powershell
+python -m pytest -q
+```
+
+The uploader accepts JPG/JPEG and PNG, limits files to 10 MB by default, validates the actual decoded format, and does not save uploads to disk. The limit can be changed with `MAX_UPLOAD_BYTES`; Streamlit's upload cap is configured in `.streamlit/config.toml` and must be adjusted to match if the limit changes.
 
 ## Project map
 
-- `common/schemas.py`: single shared source for medicine, source-alert, match-evidence, and verification contracts.
-- `ai/`: future image processing and provider adapter; extraction only, no safety decision.
-- `verification/`: future reviewed-data import, SQLite access, and deterministic matching.
-- `data/`: provenance guidance; no fabricated or unreviewed alerts.
-- `docs/`: architecture, data flow, database, contracts, collaboration workflow, and roadmap.
+- `app.py`: page layout, upload validation, session state, editable details, and demo workflow.
+- `ui/components.py`: reusable result and safety panels.
+- `ui/demo_service.py`: fixed synthetic extraction fixture and scenario results; no matching or API calls.
+- `common/schemas.py`: shared Pydantic contracts.
+- `ai/` and `verification/`: future integration boundaries; real extraction and verification are not implemented.
+- `docs/`: architecture, contracts, data flow, database design, collaboration workflow, and roadmap.
 
-See [docs/architecture.md](docs/architecture.md) and [CONTRIBUTING.md](CONTRIBUTING.md) before starting module work. Never commit API keys, uploaded images, local databases, or private user data. A real alert must be checked against an official source and include traceable evidence.
-=======
-# quantumforge-hackathon
-Building innovative AI-powered solutions to solve real-world problems through intelligent technology. 
->>>>>>> 5700318f26c4e097b7c2fcbca722a8aa536f9d10
+Never interpret `NO_MATCH_FOUND` as proof of authenticity, approval, or safety. For concerns, check the package and consult a qualified pharmacist or official DRAP information. Do not commit API keys, images, local databases, or personal data.

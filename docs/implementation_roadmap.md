@@ -1,11 +1,11 @@
 # Implementation roadmap
 
-This roadmap begins after the foundation is reviewed. Each phase should stay small, pass its acceptance checks, and keep synthetic data visibly separate from official records.
+The foundation is complete and Phase 2 provides the synthetic UI demo. Continue in small phases, keeping synthetic data visibly separate from official records.
 
 | Phase | Owner(s) | Main files | Acceptance |
 |---|---|---|---|
 | 1. Review contracts | All | `common/schemas.py`, `docs/api_contracts.md` | Team agrees on field optionality, statuses, and matching evidence rules. |
-| 2. UI shell | A + integration | `app.py`, UI tests | Upload/review/result states render; fixtures are visibly synthetic; no verification claim is implied. |
+| 2. UI shell (complete) | A + integration | `app.py`, `ui/*`, frontend tests | In-memory upload/review/result flow; synthetic fixtures labelled; no verification claim. |
 | 3. Image and extraction | B | `ai/*`, extraction tests, `.env.example` | Validated images yield typed fields; unreadable fields remain unknown; provider failures are explicit. |
 | 4. Reviewed data and DB | C | `data/*`, `verification/database.py`, `data_loader.py` | Source review metadata is complete; import is idempotent; candidates cannot match. |
 | 5. Deterministic matcher | C + all | `verification/alert_matcher.py`, unit tests | Exact, missing, conflicting, ambiguous, and no-match cases have deterministic explanations. |

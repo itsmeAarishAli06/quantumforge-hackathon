@@ -1,6 +1,6 @@
 # Dawa-Muhafiz architecture
 
-**Phase:** Foundation only. Interfaces and contracts exist; there is no working frontend, image extraction, database, or alert matcher yet.
+**Phase:** Frontend demo. A Streamlit user flow and synthetic demo service are implemented; there is no real image extraction, database, or alert matcher.
 
 ## Purpose and scope
 
@@ -31,7 +31,9 @@ All modules will run in one process. `common/schemas.py` owns shared Pydantic mo
 
 | Module | Responsibility | Current phase |
 |---|---|---|
-| `app.py` | Future Streamlit entry point and result presentation | Minimal deferred entry point only |
+| `app.py` | Streamlit layout, upload validation/preview, session state, and demo workflow | Implemented for synthetic demo |
+| `ui/components.py` | Reusable result and safety presentation | Implemented |
+| `ui/demo_service.py` | Fixed synthetic extraction and selectable result scenarios | Implemented; no API or matching logic |
 | `common/schemas.py` | Single source for medicine, alert, evidence, and result models | Implemented and tested |
 | `ai/image_processing.py` | Validate/decode image; impose size and pixel limits; temporary preprocessing | Documented interface only |
 | `ai/vision_provider.py` | Provider-neutral extraction contract; later Gemini adapter | Protocol only; no API calls |
@@ -61,4 +63,4 @@ The agreed functions are `extract_medicine_details(image_path) -> MedicineDetail
 
 ## Included and deferred
 
-Included: Python package layout, shared Pydantic contracts, dependency/configuration templates, documentation, and basic contract/setup tests. Deferred: Streamlit UI, Gemini calls, OCR, image preprocessing, SQLite operations, JSON importer, matching logic, scraping, authentication, deployment, and production medical verification. No actual alert records or verification results are supplied in this phase.
+Included: Python package layout, shared Pydantic contracts, Streamlit demo UI, in-memory image validation and preview, editable fields, synthetic demo extraction/scenarios, documentation, and tests. Deferred: Gemini calls, OCR, real extraction, SQLite operations, JSON importer, matching logic, scraping, authentication, deployment, and production medical verification. No actual alert records or verification results are supplied.

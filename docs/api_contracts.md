@@ -2,6 +2,8 @@
 
 All shared models live in `common/schemas.py`; no module should define a second copy. Contracts are independent of Streamlit, Gemini, and SQLite. Extra fields are rejected to catch interface drift. Unreadable medicine fields are `None`, optionally named in `unreadable_fields`.
 
+The current `ui/demo_service.py` returns schema-valid synthetic values for interface development. It does not inspect images, call external services, query a database, or compare medicine details. Replace this adapter only when real extraction and verification modules are ready.
+
 ```python
 def extract_medicine_details(image_path: str | Path) -> MedicineDetails: ...
 def check_drap_alerts(medicine_details: MedicineDetails) -> VerificationResult: ...
