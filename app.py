@@ -10,6 +10,7 @@ Checks available alerts in the validated dataset; never authenticates medicine s
 
 from datetime import date
 import hashlib
+from html import escape
 
 import streamlit as st
 from pydantic import ValidationError
@@ -167,17 +168,18 @@ def _render_sidebar(settings) -> None:
         st.markdown(
             """
             <div class="dm-sidebar-brand">
-              <div class="dm-brand-mark" style="width:2.4rem; height:2.4rem; font-size:0.95rem;">DM</div>
-              <div>
-                <strong style="color:var(--dm-navy); font-size:1.15rem;">Dawa-Muhafiz</strong>
-                <div style="font-size:0.78rem; color:var(--dm-emerald); font-weight:700;">دوا محافظ</div>
+              <div class="dm-brand-mark dm-sidebar-mark" aria-hidden="true"><span>DM</span></div>
+              <div class="dm-sidebar-brand-copy">
+                <span class="dm-sidebar-eyebrow">HEALTHCARE INTELLIGENCE</span>
+                <strong>Dawa-Muhafiz</strong>
+                <span class="dm-sidebar-urdu">دوا محافظ</span>
               </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        st.markdown("### 🧭 Navigation")
+        st.markdown('<div class="dm-sidebar-section-label">WORKSPACE</div>', unsafe_allow_html=True)
         nav_options = ["Check Medicine", "Overview", "Alert Intelligence", "About Dawa-Muhafiz"]
         current_nav = st.session_state.get("active_nav", "Check Medicine")
         current_nav_idx = nav_options.index(current_nav) if current_nav in nav_options else 0
@@ -190,8 +192,7 @@ def _render_sidebar(settings) -> None:
             on_change=_on_sidebar_nav_change,
         )
 
-        st.markdown("---")
-        st.markdown("### 🌐 Language / زبان")
+        st.markdown('<div class="dm-sidebar-section-label dm-language-heading">LANGUAGE · زبان</div>', unsafe_allow_html=True)
         lang_keys = list(LANGUAGES.keys())
         current_lang = st.session_state.get("app_language", "en")
         current_lang_idx = lang_keys.index(current_lang) if current_lang in lang_keys else 0
@@ -205,18 +206,18 @@ def _render_sidebar(settings) -> None:
             on_change=_on_language_change,
         )
 
-        st.markdown("---")
-        st.markdown("### ⚙️ System Status")
-        if settings.api_key:
-            st.success(f"Gemini AI Active\n`{settings.model}`", icon="✅")
-        else:
-            st.info("Demo Mode Active\n(API Key Unconfigured)", icon="ℹ️")
-
+        status_class = "dm-sidebar-status-ready" if settings.api_key else "dm-sidebar-status-demo"
+        status_label = "Extraction configured" if settings.api_key else "Demo mode"
+        status_detail = escape(settings.model) if settings.api_key else "Live extraction is not configured"
         st.markdown(
-            """
-            <div class="dm-sidebar-card">
-              <strong style="color:var(--dm-navy); display:block; margin-bottom:0.25rem;">🛡️ Medical Boundary</strong>
-              <span style="color:var(--dm-text-muted);">Dawa-Muhafiz checks for matching alerts in official records. It never certifies whether a medicine is genuine, authentic, or safe.</span>
+            f"""
+            <div class="dm-sidebar-section-label dm-system-heading">SYSTEM STATUS</div>
+            <div class="dm-sidebar-status {status_class}">
+              <div class="dm-sidebar-status-heading">
+                <span class="dm-status-dot" aria-hidden="true"></span>
+                <strong>{status_label}</strong>
+              </div>
+              <span class="dm-sidebar-status-detail">{status_detail}</span>
             </div>
             """,
             unsafe_allow_html=True,
@@ -224,15 +225,34 @@ def _render_sidebar(settings) -> None:
 
         st.markdown(
             """
-            <div class="dm-sidebar-card">
-              <strong style="color:var(--dm-navy); display:block; margin-bottom:0.25rem;">🔒 In-Memory Privacy</strong>
-              <span style="color:var(--dm-text-muted);">Photos are decoded in memory and discarded when the session ends. No personal data is persisted.</span>
+            <div class="dm-sidebar-card dm-sidebar-safety">
+              <span class="dm-sidebar-card-icon" aria-hidden="true">+</span>
+              <div>
+                <strong>Safety first</strong>
+                <span>Dawa-Muhafiz does not certify that a medicine is genuine or safe.</span>
+              </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        st.caption("v1.0-prototype · QuantumForge Sindh Healthcare")
+        st.markdown(
+            """
+            <div class="dm-sidebar-card dm-sidebar-privacy">
+              <span class="dm-sidebar-card-icon" aria-hidden="true">↗</span>
+              <div>
+                <strong>Private by design</strong>
+                <span>Images stay in session memory unless Gemini extraction is requested.</span>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            '<div class="dm-sidebar-version"><span class="dm-version-dot"></span> HACKATHON PROTOTYPE <span>·</span> v1.0</div>',
+            unsafe_allow_html=True,
+        )
 
 
 def main() -> None:
@@ -513,9 +533,30 @@ def main() -> None:
     st.markdown(
         f"""
         <div class="dm-footer">
-          <p><strong>Dawa-Muhafiz (دوا محافظ)</strong> — Medicine Alert Intelligence & Safety Screening.</p>
-          <p>{t('footer_about_text', lang)}</p>
-          <p style="font-size:0.8rem; color:var(--dm-text-muted);">{t('footer_privacy_text', lang)} · {t('footer_standards', lang)}</p>
+          <div class="dm-footer-top">
+            <div class="dm-footer-brand">
+              <span class="dm-footer-mark" aria-hidden="true">DM</span>
+              <div>
+                <strong>Dawa-Muhafiz <span>دوا محافظ</span></strong>
+                <small>Medicine packaging review · Pakistan</small>
+              </div>
+            </div>
+            <a class="dm-footer-link" href="https://www.dra.gov.pk/" target="_blank" rel="noopener noreferrer">
+              Official DRAP website <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <div class="dm-footer-boundary">
+            <span class="dm-footer-boundary-icon" aria-hidden="true">i</span>
+            <p><strong>Academic prototype, not a medical verdict.</strong> No alert match does not prove a medicine is genuine or safe.</p>
+          </div>
+          <div class="dm-footer-bottom">
+            <span>{escape(t('footer_about_text', lang))}</span>
+            <span>{escape(t('footer_privacy_text', lang))}</span>
+          </div>
+          <div class="dm-footer-meta">
+            <span>Built for learning and responsible AI research</span>
+            <span>{escape(t('footer_standards', lang))}</span>
+          </div>
         </div>
         """,
         unsafe_allow_html=True,

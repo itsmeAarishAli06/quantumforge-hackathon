@@ -8,6 +8,7 @@ Maintains strict medical boundaries:
 """
 
 from datetime import datetime
+from html import escape
 import streamlit as st
 
 from common.schemas import VerificationResult, VerificationStatus, MedicineDetails
@@ -17,25 +18,29 @@ from verification.data_loader import get_dataset_metadata
 
 
 def render_top_navbar(active_nav: str, lang: str = "en", gemini_ready: bool = False, model: str = "") -> None:
-    """Render the desktop/mobile top navigation bar."""
+    """Render the branded application header and current system status."""
     rtl_class = "dm-localized-container" if is_rtl(lang) else ""
-    status_pill = (
-        f'<span class="dm-demo-pill dm-pill-configured">● AI Active ({model})</span>'
-        if gemini_ready
-        else '<span class="dm-demo-pill dm-pill-demo">● Demo Mode</span>'
-    )
+    status_class = "dm-status-ready" if gemini_ready else "dm-status-demo"
+    status_label = "Gemini extraction ready" if gemini_ready else "Demo mode"
+    status_detail = f" · {escape(model)}" if gemini_ready and model else ""
     st.markdown(
         f"""
         <div class="dm-topbar {rtl_class}">
           <div class="dm-brand-left">
-            <div class="dm-brand-mark" aria-hidden="true">DM</div>
-            <div>
-              <p class="dm-brand-title">Dawa-Muhafiz <span style="font-weight:400; color:var(--dm-emerald);">| دوا محافظ</span></p>
-              <p class="dm-brand-subtitle">{t('app_descriptor', lang)} · {t('badge_prototype', lang)}</p>
+            <div class="dm-brand-mark" aria-hidden="true"><span>DM</span></div>
+            <div class="dm-brand-copy">
+              <span class="dm-brand-eyebrow">MEDICINE SAFETY · PAKISTAN</span>
+              <p class="dm-brand-title">Dawa-Muhafiz <span class="dm-brand-urdu">دوا محافظ</span></p>
+              <p class="dm-brand-subtitle">{escape(t('app_descriptor', lang))}</p>
             </div>
           </div>
-          <div>
-            {status_pill}
+          <div class="dm-topbar-meta">
+            <span class="dm-prototype-badge">ACADEMIC PROTOTYPE</span>
+            <span class="dm-topbar-status {status_class}">
+              <span class="dm-status-dot" aria-hidden="true"></span>
+              {status_label}{status_detail}
+            </span>
+            <span class="dm-current-view">{escape(active_nav)}</span>
           </div>
         </div>
         """,
